@@ -63,8 +63,7 @@ public class JwtService {
                 .compact();
     }
 
-    //generate refresh token
-    // generate refreshotken.
+    // generate refresh token.
     public String generateRefreshToken(User user, String jti) {
         Instant now = Instant.now();
         return Jwts.builder()
@@ -79,7 +78,6 @@ public class JwtService {
     }
 
     //parse the token
-
     public Jws<Claims> parse(String token) {
         return Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
     }
@@ -88,7 +86,6 @@ public class JwtService {
         Claims c = parse(token).getPayload();
         return "access".equals(c.get("typ"));
     }
-
 
     public boolean isRefreshToken(String token) {
         Claims c = parse(token).getPayload();
