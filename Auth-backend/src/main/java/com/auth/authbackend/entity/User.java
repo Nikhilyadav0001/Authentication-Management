@@ -30,6 +30,7 @@ public class User {
     private Instant createdAt;
     private Instant updatedAt;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private Provider provider = Provider.LOCAL;
 
@@ -41,6 +42,9 @@ public class User {
 
     @PrePersist
     protected void onCreate() {
+        if (provider == null) {
+            provider = Provider.LOCAL;
+        }
         Instant now = Instant.now();
         if (createdAt == null) createdAt = now;
         updatedAt = now;

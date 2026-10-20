@@ -21,11 +21,11 @@ public class UserDto {
     private String email;
     private String name;
     private String password;
-    @Builder.Default
     private boolean enabled = true;
     private Instant createdAt;
     private Instant updatedAt;
 
+    @Builder.Default
     private Provider provider = Provider.LOCAL;
 
     private Set<RoleDto> roles = new HashSet<>();
