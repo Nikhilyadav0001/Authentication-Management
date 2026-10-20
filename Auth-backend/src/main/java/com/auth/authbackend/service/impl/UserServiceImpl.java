@@ -1,4 +1,4 @@
-package com.auth.authbackend.service;
+package com.auth.authbackend.service.impl;
 
 import com.auth.authbackend.dto.UserDto;
 import com.auth.authbackend.entity.Provider;
@@ -6,10 +6,10 @@ import com.auth.authbackend.entity.User;
 import com.auth.authbackend.exception.ResourceNotFoundException;
 import com.auth.authbackend.helper.UserHelper;
 import com.auth.authbackend.repository.UserRepository;
+import com.auth.authbackend.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
