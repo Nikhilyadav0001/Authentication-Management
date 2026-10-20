@@ -27,7 +27,7 @@ security:
   jwt:
     secret: ${JWT_SECRET:c2VjdXJlLWp3dC1zZWNyZXQta2V5LWF1dGgtYXBwLWJhY2tlbmQtMjU2LWJpdC1vci01MTItYml0cy1sb25nLWVub3VnaA==}
     issuer: ${JWT_ISSUER:authbackend.auth.com}
-    access-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:900}
+    access-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:600}
     refresh-ttl-seconds: ${JWT_REFRESH_TTL_SECONDS:86400}
     refresh-token-cookie-name: ${JWT_REFRESH_COOKIE_NAME:refreshToken}
     cookie-secure: ${JWT_COOKIE_SECURE:true}
