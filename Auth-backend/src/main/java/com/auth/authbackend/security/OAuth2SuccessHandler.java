@@ -33,7 +33,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final CookieService cookieService;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    @Value("${app.auth.frontend.success-redirect:http://localhost:5173}")
+    @Value("${app.auth.frontend.success-redirect}")
     private String frontEndSuccessUrl;
 
     @Override
@@ -67,23 +67,36 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                         .image(picture)
                         .enabled(true)
                         .provider(Provider.GOOGLE)
+                        .providerId(googleId)
                         .build();
 
-                user = userRepository.findByEmail(email).map(existingUser -> {
-                    // Update profile info if missing
-                    boolean updated = false;
-                    if ((existingUser.getImage() == null || existingUser.getImage().isBlank()) && !picture.isBlank()) {
-                        existingUser.setImage(picture);
-                        updated = true;
-                    }
-                    if ((existingUser.getName() == null || existingUser.getName().isBlank()) && !name.isBlank()) {
-                        existingUser.setName(name);
-                        updated = true;
-                    }
-                    return updated ? userRepository.save(existingUser) : existingUser;
-                }).orElseGet(() -> userRepository.save(newUser));
+                user = userRepository.findByEmail(email).orElse(newUser);
+                user.setProviderId(googleId);
+                user = userRepository.save(user);
             }
+            case "github" -> {
+                String name = oAuth2User.getAttributes().getOrDefault("login", "").toString();
+                String githubId = oAuth2User.getAttributes().getOrDefault("id", "").toString();
+                String image = oAuth2User.getAttributes().getOrDefault("avatar_url", "").toString();
 
+                String email = (String) oAuth2User.getAttributes().get("email");
+                if (email == null) {
+                    email = name + "@github.com";
+                }
+
+                User newUser = User.builder()
+                        .email(email)
+                        .name(name)
+                        .image(image)
+                        .enabled(true)
+                        .provider(Provider.GITHUB)
+                        .providerId(githubId)
+                        .build();
+
+                user = userRepository.findByEmail(email).orElse(newUser);
+                user.setProviderId(githubId);
+                user = userRepository.save(user);
+            }
             default -> throw new RuntimeException("Invalid registration id: " + registrationId);
         }
 
@@ -103,9 +116,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String refreshToken = jwtService.generateRefreshToken(user, refreshTokenOb.getJti());
         cookieService.attachRefreshCookie(response, refreshToken, (int) jwtService.getRefreshTtlSeconds());
 
-        // In a full SPA flow, redirect to frontend with token (or let frontend exchange cookie):
-        // response.sendRedirect(frontEndSuccessUrl + "?token=" + accessToken);
-        // For testing backend directly in browser/client:
-        response.getWriter().write("Login successful");
+        response.sendRedirect(frontEndSuccessUrl);
     }
 }

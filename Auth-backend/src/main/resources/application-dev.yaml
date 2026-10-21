@@ -31,7 +31,12 @@ spring:
               - email
               - profile
               - openid
-
+          github:
+            client-id: ${GITHUB_CLIENT_ID:test-client-id}
+            client-secret: ${GITHUB_CLIENT_SECRET:test-client-id}
+            scope:
+              - user:email
+              - read:user
 logging:
   level:
     org.springframework.web: DEBUG
@@ -51,4 +56,5 @@ security:
 app:
   auth:
     frontend:
-      success-redirect: ${FRONTEND_SUCCESS_REDIRECT:http://localhost:5173}
+      success-redirect: http://localhost:5173/auth/success
+      failure-redirect: http://localhost:5173/auth/failure
