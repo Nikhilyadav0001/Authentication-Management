@@ -8,8 +8,10 @@ import com.auth.authbackend.entity.RefreshToken;
 import com.auth.authbackend.entity.User;
 import com.auth.authbackend.repository.RefreshTokenRepository;
 import com.auth.authbackend.repository.UserRepository;
+import com.auth.authbackend.security.CookieService;
 import com.auth.authbackend.security.JwtService;
 import com.auth.authbackend.service.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -38,10 +40,12 @@ public class AuthController {
     private final JwtService  jwtService;
     private final ModelMapper modelMapper;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final CookieService cookieService;
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(
             @RequestBody LoginRequest loginRequest
+            , HttpServletResponse response
     ){
         //authenticate
         Authentication authentication=authenticate(loginRequest);
@@ -66,6 +70,10 @@ public class AuthController {
         //token--generate
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user, refreshTokenOb.getJti());
+
+        //use cookie service to attach refresh token in cookie
+        cookieService.attachRefreshCookie(response,refreshToken,(int)jwtService.getRefreshTtlSeconds());
+        cookieService.addNoStoreHeaders(response);
 
         TokenResponse tokenResponse = TokenResponse.of(accessToken,refreshToken,jwtService.getAccessTtlSeconds(),modelMapper.map(user, UserDto.class));
         return ResponseEntity.ok(tokenResponse);
