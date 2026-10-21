@@ -2,6 +2,9 @@ package com.auth.authbackend.config;
 
 import com.auth.authbackend.dto.ApiError;
 import com.auth.authbackend.security.JwtAuthenticationFilter;
+import com.auth.authbackend.security.OAuth2SuccessHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,8 +24,13 @@ import tools.jackson.databind.ObjectMapper;
 @Configuration
 public class SecurityConfig {
 
+    private final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Autowired
+    private OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -31,24 +39,24 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers("/api/v1/auth/register").permitAll()
-                        .requestMatchers("/api/v1/auth/login").permitAll()
-                        .requestMatchers("/api/v1/auth/refresh").permitAll()
-                        .requestMatchers("/api/v1/auth/logout").permitAll()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
+                .oauth2Login(oauth2 ->
+                        oauth2.successHandler(oAuth2SuccessHandler))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
-                   //error message
-                    authException.printStackTrace();
-                    response.setStatus(401);
+                    logger.warn("Unauthorized access to {}: {}", request.getRequestURI(), authException.getMessage());
+                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     response.setContentType("application/json");
-                    String message = "Unauthrized Access!!!"+authException.getMessage();
-                    String error=(String) request.getAttribute("error");
-                    if(error!=null){
-                        message=error;
+                    String message = "Unauthorized Access: " + authException.getMessage();
+                    String error = (String) request.getAttribute("error");
+                    if (error != null) {
+                        message = error;
                     }
 
-                    var apiError = ApiError.of(HttpStatus.FORBIDDEN.value(), "Forbidden Access", message, request.getRequestURI(), true);
+                    var apiError = ApiError.of(HttpStatus.UNAUTHORIZED.value(), "Unauthorized Access", message, request.getRequestURI(), true);
                     var objectMapper = new ObjectMapper();
                     response.getWriter().write(objectMapper.writeValueAsString(apiError));
                 }))
@@ -65,21 +73,5 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) {
         return configuration.getAuthenticationManager();
     }
-//    InMemoryConfiguration
-//    @Bean
-//    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-//        UserDetails user1 = User.builder()
-//                .username("admin")
-//                .password(passwordEncoder.encode("admin"))
-//                .roles("ADMIN")
-//                .build();
-//
-//        UserDetails user2 = User.builder()
-//                .username("nikhil")
-//                .password(passwordEncoder.encode("nikhil"))
-//                .roles("ADMIN")
-//                .build();
-//
-//        return new InMemoryUserDetailsManager(user1, user2);
-//    }
+
 }

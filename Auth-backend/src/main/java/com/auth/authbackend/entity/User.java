@@ -26,6 +26,7 @@ public class User implements UserDetails {
     @Column(name = "user_name", length = 500)
     private String name;
     private String password;
+    private String image;
     @Builder.Default
     private boolean enabled = true;
     private Instant createdAt;
@@ -39,6 +40,7 @@ public class User implements UserDetails {
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
     @PrePersist
@@ -58,6 +60,9 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (roles == null) {
+            return List.of();
+        }
         return roles
                 .stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))

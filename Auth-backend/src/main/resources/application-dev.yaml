@@ -19,6 +19,19 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+  #OAuth 2  configuration
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:test-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:test-client-secret}
+            scope:
+              - email
+              - profile
+              - openid
+
 logging:
   level:
     org.springframework.web: DEBUG
@@ -34,3 +47,8 @@ security:
     cookie-http-only: ${JWT_COOKIE_HTTP_ONLY:true}
     cookie-same-site: ${JWT_COOKIE_SAME_SITE:lax}
     cookie-domain: ${JWT_COOKIE_DOMAIN:localhost}
+
+app:
+  auth:
+    frontend:
+      success-redirect: ${FRONTEND_SUCCESS_REDIRECT:http://localhost:5173}
