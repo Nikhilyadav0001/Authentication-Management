@@ -2,12 +2,10 @@ package com.auth.authbackend.controller;
 
 import com.auth.authbackend.dto.UserDto;
 import com.auth.authbackend.service.UserService;
-
-
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,7 +17,7 @@ public class UserController {
 
     //create user api
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(userDto));
     }
 
@@ -45,7 +43,7 @@ public class UserController {
     //update user
     //api/v1/users/{userId}
     @PutMapping("/{userId}")
-    public ResponseEntity<UserDto> updateUser(@RequestBody UserDto userDto, @PathVariable("userId") String userId) {
+    public ResponseEntity<UserDto> updateUser(@Valid @RequestBody UserDto userDto, @PathVariable("userId") String userId) {
         return ResponseEntity.ok(userService.updateUser(userDto, userId));
     }
 
